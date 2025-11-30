@@ -1,75 +1,189 @@
-<html>
-
+<!doctype html>
+<html lang="de">
 <head>
-    <title>Countdown</title>
-    <style>
-        /* CSS to style the text */
-        body {
-            background-color: #379c7e;
-            color: rgb(252, 252, 252);
-
-            /* Background color */
-        }
-
-        .raleway-700 {
-            font-family: "Raleway", sans-serif;
-            font-optical-sizing: auto;
-            font-weight: 700;
-            font-style: normal;
-        }
-
-        .container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100%;
-        }
-    </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap"
-        rel="stylesheet">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Wer startet als Nächster?</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+    body{padding:24px;background:#f6f7fb;color:#111}
+    .card{max-width:720px;margin:0 auto;background:#fff;padding:18px;border-radius:12px;box-shadow:0 6px 24px rgba(20,30,60,0.08)}
+    h1{margin:0 0 8px;font-size:20px}
+    .now{font-size:14px;color:#666;margin-bottom:12px; font-size: 20px;}
+    .next{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:8px;background:linear-gradient(90deg,#eef7ff,#f7fcf8);box-shadow:inset 0 -1px 0 rgba(0,0,0,0.02)}
+    .person{font-weight:700;font-size:50px}
+    .count{font-family:monospace;font-size:50px}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:6px 8px;text-align:left;border-bottom:1px solid #f0f2f6}
+    tr.active{background:#fff8e6}
+    .muted{color:#777;font-size:13px}
+    footer{margin-top:10px;font-size:13px;color:#666}
+    .progress{height:10px;background:#eee;border-radius:6px;overflow:hidden;margin-top:8px}
+    .bar{height:100%;width:0%;background:linear-gradient(90deg,#4facfe,#00f2fe)}
+  </style>
 </head>
+<body>
+  <div class="card">
+    <h1>Wer startet als Nächster?</h1>
+    <div class="now" id="nowLabel">Aktuelle Zeit: --:--:--</div>
 
-<body class="raleway-700 container">
-    <div class="item">
-        <h1 class=""> <span id="days"></span> Tage</h1>
+    <div class="next">
+      <div>
+        <div class="person" id="nextPerson">—</div>
+        <div class="muted" id="nextTime">Startzeit: —</div>
+      </div>
+      <div class="count" id="countdown">-- s</div>
     </div>
-    <div class="item">
-        <h2>
-            <span id="hours"></span>h <span id="minutes"></span>min <span id="seconds"></span>s
-            </p>
-    </div>
+    <div class="progress" title="Fortschritt"><div class="bar" id="progressBar"></div></div>
+
+
+    <table id="scheduleTable">
+      <thead><tr><th>Startzeit</th><th>Name</th></tr></thead>
+      <tbody></tbody>
+    </table>
+
+  </div>
+
+  <script>
+    // Zeitplan (aus Deiner Liste) — leere Einträge entfernt
+    const schedule = [
+      {t: '13:30:00', name: 'Andina'},
+      {t: '13:30:37', name: 'Laurin G.'},
+      {t: '13:31:14', name: 'Mia'},
+      {t: '13:31:51', name: 'Janis'},
+      {t: '13:32:28', name: 'Annina'},
+      {t: '13:33:05', name: 'Andrin M.'},
+      {t: '13:33:42', name: 'Marilie'},
+      {t: '13:34:19', name: 'Lino M.'},
+      {t: '13:34:56', name: 'Jana'},
+      {t: '13:35:33', name: 'Andrin W.'},
+      {t: '13:36:10', name: 'Anja'},
+      {t: '13:36:47', name: 'Lorin'},
+      {t: '13:37:24', name: 'Jael'},
+      {t: '13:38:01', name: 'Lino W.'},
+      {t: '13:38:38', name: 'Johana'},
+      {t: '13:39:15', name: 'Léon'},
+      {t: '13:39:52', name: 'Samira'},
+      {t: '13:40:29', name: 'Timon'},
+      {t: '13:41:06', name: 'Céline'},
+      {t: '13:41:43', name: 'Res'},
+      {t: '13:42:20', name: 'Elin'},
+      {t: '13:42:57', name: 'Laurin Z.'},
+      {t: '13:43:34', name: 'Minna'},
+      {t: '13:44:11', name: 'Taavi'},
+      {t: '13:44:48', name: 'Michèle'},
+      {t: '13:45:25', name: 'Lars'},
+      {t: '13:46:02', name: 'Malin'},
+      // 13:46:39 und 13:47:53 waren leer in der Liste — ignoriert
+      {t: '13:47:16', name: 'Sadie'},
+      {t: '13:48:30', name: 'Aline'}
+    ];
+
+    // Hilfsfunktionen
+    function timeStringToDate(timeStr, baseDate){
+      const [hh,mm,ss] = timeStr.split(':').map(Number);
+      const d = new Date(baseDate);
+      d.setHours(hh,mm,ss,0);
+      return d;
+    }
+
+    function findNext(now){
+      // Suche ersten Termin heute, der nach 'now' liegt
+      for(const item of schedule){
+        const dt = timeStringToDate(item.t, now);
+        if(dt > now) return {item, dt};
+      }
+      // Falls nichts mehr heute, nimm ersten Termin morgen
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate()+1);
+      const dt = timeStringToDate(schedule[0].t, tomorrow);
+      return {item: schedule[0], dt};
+    }
+
+    // UI-Referenzen
+    const nowLabel = document.getElementById('nowLabel');
+    const nextPerson = document.getElementById('nextPerson');
+    const nextTime = document.getElementById('nextTime');
+    const countdown = document.getElementById('countdown');
+    const tbody = document.querySelector('#scheduleTable tbody');
+    const progressBar = document.getElementById('progressBar');
+
+    // Tabelle rendern
+    function renderTable(nextDt){
+      tbody.innerHTML = '';
+      for(const item of schedule){
+        const tr = document.createElement('tr');
+        const tdTime = document.createElement('td');
+        tdTime.textContent = item.t;
+        const tdName = document.createElement('td');
+        tdName.textContent = item.name;
+        tr.appendChild(tdTime);
+        tr.appendChild(tdName);
+        // Markiere aktive Zeile (die mit nextDt)
+        const candidate = timeStringToDate(item.t, nextDt);
+        if(candidate.getHours()===nextDt.getHours() && candidate.getMinutes()===nextDt.getMinutes() && candidate.getSeconds()===nextDt.getSeconds()){
+          tr.classList.add('active');
+        }
+        tbody.appendChild(tr);
+      }
+    }
+
+    function formatSecondsDiff(sec){
+      if(sec < 0) sec = 0;
+      const s = Math.floor(sec % 60).toString().padStart(2,'0');
+      const m = Math.floor((sec/60) % 60).toString().padStart(2,'0');
+      const h = Math.floor(sec/3600).toString();
+      if(h==='0') return `${m}:${s}`;
+      return `${h}:${m}:${s}`;
+    }
+
+    // Haupt-Update-Schleife
+    let lastNext = null;
+    function update(){
+      const now = new Date();
+      nowLabel.textContent = 'Aktuelle Zeit: ' + now.toLocaleTimeString();
+
+      const {item, dt: nextDt} = findNext(now);
+
+      // Falls sich der "nächste" geändert hat, re-render die Tabelle
+      const nextKey = item.t + '|' + item.name + '|' + nextDt.toDateString();
+      if(nextKey !== lastNext){
+        lastNext = nextKey;
+        renderTable(nextDt);
+      }
+
+      nextPerson.textContent = item.name;
+      nextTime.textContent = 'Startzeit: ' + nextDt.toLocaleTimeString();
+
+      const remainingSec = Math.round((nextDt - now) / 1000);
+      countdown.textContent = (remainingSec>0 ? formatSecondsDiff(remainingSec) : '0:00');
+
+      // Fortschrittsbalken: Verhältnis vergangener Zeit zum Intervall zwischen vorherigem und next
+      // Finde vorherigen Termin (kann gestern sein)
+      let prevIndex = schedule.findIndex(s=>s.t===item.t) - 1;
+      let prevDt;
+      if(prevIndex >= 0){
+        prevDt = timeStringToDate(schedule[prevIndex].t, nextDt);
+      } else {
+        const yesterday = new Date(nextDt);
+        yesterday.setDate(yesterday.getDate()-1);
+        prevDt = timeStringToDate(schedule[schedule.length-1].t, yesterday);
+      }
+      const total = (nextDt - prevDt) / 1000; // Sekunden zwischen vorherigem und nächstem
+      const elapsed = (now - prevDt) / 1000;
+      const pct = Math.max(0, Math.min(1, elapsed / total));
+      progressBar.style.width = Math.round(pct*100) + '%';
+
+      // Update jede 250ms für flüssige Anzeige
+      requestAnimationFrame(() => setTimeout(update, 250));
+    }
+
+    // Initialisierung
+    (function init(){
+      renderTable(new Date());
+      update();
+    })();
+
+  </script>
 </body>
-
-<script>
-    // YYYY-MM-DDTHH:mm:ss.sssZ
-    var countDown = new Date('2024-07-29T17:00:00.000Z').getTime();
-
-    setInterval(() => {
-
-        var currtentTime = new Date().getTime();
-
-
-        var difference = countDown - currtentTime;
-
-        var dayMillis = 1000 * 60 * 60 * 24;
-        var hourMillis = dayMillis / 24;
-        var minMillis = hourMillis / 60;
-
-        var days = Math.floor(difference / dayMillis)
-        var hours = Math.floor((difference % dayMillis) / hourMillis)
-        var minutes = Math.floor((difference % hourMillis) / minMillis)
-        var seconds = Math.floor(difference % minMillis / 1000);
-
-        document.getElementById("days").innerHTML = days;
-        document.getElementById("hours").innerHTML = hours;
-        document.getElementById("minutes").innerHTML = minutes;
-        document.getElementById("seconds").innerHTML = seconds;
-    }, 1000)
-
-
-</script>
-
 </html>
