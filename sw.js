@@ -1,9 +1,10 @@
 const CACHE = 'starter-v1';
 const ASSETS = ['./', './index.html'];
 
-self.addEventListener('install', e =>
+self.addEventListener('install', e =>{
+  self.skipWaiting() // ← neu: sofort aktiv ohne Warten
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)))
-);
+});
 
 self.addEventListener('activate', e =>
   e.waitUntil(
