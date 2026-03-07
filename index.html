@@ -12,7 +12,7 @@
     .card{max-width:720px;margin:0 auto;background:#fff;padding:18px;border-radius:12px;box-shadow:0 6px 24px rgba(20,30,60,0.08)}
     h1{margin:0 0 8px;font-size:20px}
     .now{font-size:14px;color:#666;margin-bottom:12px; font-size: 20px;}
-    .next{display:flex;flex-wrap: wrap;align-items:center;justify-content:space-between;padding:12px;border-radius:8px;background:linear-gradient(90deg,#eef7ff,#f7fcf8);box-shadow:inset 0 -1px 0 rgba(0,0,0,0.02)}
+    .next{display:flex;flex-wrap: wrap;align-items:center;justify-content:space-between;}
     .person{font-weight:700;font-size:50px}
     .count{font-family:monospace;font-size:50px}
     table{width:100%;border-collapse:collapse;margin-top:12px}
@@ -23,16 +23,21 @@
     .progress{height:10px;background:#eee;border-radius:6px;overflow:hidden;margin-top:8px}
     .bar{height:100%;width:0%;background:linear-gradient(90deg,#4facfe,#00f2fe)}
     #offlineBanner{display:none;background:#fff3cd;color:#856404;padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:14px}
+    .fancyBackground{
+      padding:12px;border-radius:8px;background:linear-gradient(90deg,#eef7ff,#f7fcf8);box-shadow:inset 0 -1px 0 rgba(0,0,0,0.02)
+    }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>Wer startet als nächstes?</h1>
-    <button id="playAudio">Play</button>
+    <div style="display: flex; justify-content: space-between;">
+      <h1>Wer startet als nächstes?</h1>
+      <button id="playAudio" type="button" class="fancyBackground"><img id="playAudioIcon" src="assets/images/volume_off_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"/></button>  
+    </div>
     <div id="offlineBanner">⚠️ Offline – Daten aus dem Cache</div>
     <div class="now" id="nowLabel">Aktuelle Zeit: --:--:--</div>
 
-    <div class="next">
+    <div class="next fancyBackground">
       <div>
         <div class="person" id="nextPerson">—</div>
         <div class="muted" id="nextTime">Startzeit: —</div>
@@ -137,6 +142,7 @@
     const tbody = document.querySelector('#scheduleTable tbody');
     const progressBar = document.getElementById('progressBar');
     const autoButton = document.getElementById('playAudio');
+    const autoButtonIcon = document.getElementById('playAudioIcon');
     let ctx = null;
     let osc = null;
     let lastPlayedSecond = null;
@@ -211,17 +217,26 @@
     }
 
     (function init(){
-      for(let i = 0; i < 10; i++){
-        const currentTime = new Date();
-        let time = currentTime.addSecs((i*15)+7);
-        const t = `${currentTime.getHours()}:${currentTime.getMinutes()}:${currentTime.getSeconds()}`
-        schedule.splice(i,0,{
-          t, name: 'Michi' + i
-        });
-      }
+      // for(let i = 0; i < 10; i++){
+      //   const currentTime = new Date();
+      //   let time = currentTime.addSecs((i*15)+7);
+      //   const t = `${currentTime.getHours()}:${currentTime.getMinutes()}:${currentTime.getSeconds()}`
+      //   schedule.splice(i,0,{
+      //     t, name: 'Michi ' + i
+      //   });
+      // }
       renderTable(new Date());
       update();
-      autoButton.onclick = () => playTone(340, 0);
+      autoButton.onclick = () => {
+        if(osc) {
+          autoButtonIcon.src = "assets/images/volume_off_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg";
+          ctx = null;
+          osc = null;
+        } else {
+          autoButtonIcon.src = "assets/images/volume_up_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg";
+          playTone(340, 0);
+        }
+      }
     })();
 
 
