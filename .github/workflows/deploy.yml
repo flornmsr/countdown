@@ -19,11 +19,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Cache-Version aktualisieren
-      run: |
-        TIMESTAMP=$(date +%Y%m%d%H%M%S)
-        sed -i "s/const CACHE = 'starter-[^']*'/const CACHE = 'starter-$TIMESTAMP'/" sw.js
-
     - name: GitHub Pages konfigurieren
       uses: actions/configure-pages@v5
 

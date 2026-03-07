@@ -55,67 +55,27 @@
   </div>
 
   <script>
-    // Service Worker registrieren
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js').catch(console.warn);
-    }
+    // // Service Worker registrieren
+    // if ('serviceWorker' in navigator) {
+    //   navigator.serviceWorker.register('./sw.js').catch(console.warn);
+    // }
 
-    // Offline-Banner ein-/ausblenden
-    function updateOnlineStatus() {
-      document.getElementById('offlineBanner').style.display =
-        navigator.onLine ? 'none' : 'block';
-    }
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
-    updateOnlineStatus();
+    // // Offline-Banner ein-/ausblenden
+    // function updateOnlineStatus() {
+    //   document.getElementById('offlineBanner').style.display =
+    //     navigator.onLine ? 'none' : 'block';
+    // }
+    // window.addEventListener('online', updateOnlineStatus);
+    // window.addEventListener('offline', updateOnlineStatus);
+    // updateOnlineStatus();
 
     // Zeitplan (aus Deiner Liste) — leere Einträge entfernt
     const schedule = [
   {t: '14:45:00', name: 'Samuel Boss'},
   {t: '14:46:00', name: 'James Hottinger'},
   {t: '14:47:00', name: 'Andrin Meier'},
-  {t: '14:48:00', name: 'Jonas Vogel'},
-  {t: '14:49:00', name: 'Timon Zaugg'},
-  {t: '14:50:00', name: 'Steffen Tobias'},
-  {t: '14:51:00', name: 'Janis Gwerder'},
-  {t: '15:00:00', name: 'Carl Habermayr'},
-  {t: '15:01:00', name: 'Jules Hamel'},
-  {t: '15:02:00', name: 'Noah Haussener'},
-  {t: '15:03:00', name: 'Romain Hediger'},
-  {t: '15:04:00', name: 'Lorin Lang'},
-  {t: '15:05:00', name: 'Maximilian Nagel'},
-  {t: '15:06:00', name: 'Andreas Neuenschwander'},
-  {t: '15:07:00', name: 'Rémi Renaud'},
-  {t: '15:10:00', name: 'Florian Renaud'},
-  {t: '15:15:00', name: 'Julian Schmied'},
-  {t: '15:16:00', name: 'Aurélien Senn'},
-  {t: '15:17:00', name: 'Robin Pellaton'},
-  {t: '15:18:00', name: 'Robin Pellaton'},
-  {t: '15:19:00', name: 'Laurin Gwerder'},
-  {t: '15:20:00', name: 'Arthur Jaquet'},
-  {t: '15:21:00', name: 'Jonathan Rossier'},
-  {t: '15:30:00', name: 'Lino Meier'},
-  {t: '15:31:00', name: 'Lars Niggli'},
-  {t: '15:32:00', name: 'Andrin Wegmüller'},
-  {t: '15:33:00', name: 'Lino Wegmüller'},
-  {t: '15:45:00', name: 'Elizabeth Grasset'},
-  {t: '15:46:00', name: 'Rachel Marxer'},
-  {t: '15:47:00', name: 'Samira Meier'},
-  {t: '15:48:00', name: 'Jael Beutler'},
-  {t: '15:49:00', name: 'Marie Boss'},
-  {t: '15:50:00', name: 'Lynn Gmür'},
-  {t: '15:51:00', name: 'Sadie Jans'},
-  {t: '16:00:00', name: 'Margaux Jaquet'},
-  {t: '16:01:00', name: 'Annina Kunz'},
-  {t: '16:02:00', name: 'Malin Niggli'},
-  {t: '16:03:00', name: 'Andina Wagner'},
-  {t: '16:04:00', name: 'Céline Aeschlimann'},
-  {t: '16:05:00', name: 'Michèle Aeschlimann'},
-  {t: '16:06:00', name: 'Johana Hanzlikova'},
-  {t: '16:07:00', name: 'Minna Gmür'},
-  {t: '16:15:00', name: 'Anja Niggli'},
-  {t: '16:16:00', name: 'Mia Röthlisberger'},
-  {t: '16:17:00', name: 'Marilie Schwarz'}
+  {t: '15:29:00', name: 'Test 1'},
+  {t: '15:30:00', name: 'Test 1'},
 ];
 
     // Hilfsfunktionen
