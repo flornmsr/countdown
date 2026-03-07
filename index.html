@@ -4,6 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Wer startet als nächstes?</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4facfe" />
   <style>
     :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
     body{padding:24px;background:#f6f7fb;color:#111}
@@ -20,11 +22,13 @@
     footer{margin-top:10px;font-size:13px;color:#666}
     .progress{height:10px;background:#eee;border-radius:6px;overflow:hidden;margin-top:8px}
     .bar{height:100%;width:0%;background:linear-gradient(90deg,#4facfe,#00f2fe)}
+    #offlineBanner{display:none;background:#fff3cd;color:#856404;padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:14px}
   </style>
 </head>
 <body>
   <div class="card">
     <h1>Wer startet als nächstes?</h1>
+    <div id="offlineBanner">⚠️ Offline – Daten aus dem Cache</div>
     <div class="now" id="nowLabel">Aktuelle Zeit: --:--:--</div>
 
     <div class="next">
@@ -45,6 +49,20 @@
   </div>
 
   <script>
+    // Service Worker registrieren
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(console.warn);
+    }
+
+    // Offline-Banner ein-/ausblenden
+    function updateOnlineStatus() {
+      document.getElementById('offlineBanner').style.display =
+        navigator.onLine ? 'none' : 'block';
+    }
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus();
+
     // Zeitplan (aus Deiner Liste) — leere Einträge entfernt
     const schedule = [
   {t: '14:45:00', name: 'Samuel Boss'},
@@ -101,27 +119,23 @@
     }
 
     function findNext(now){
-      // Suche ersten Termin heute, der nach 'now' liegt
       for(const item of schedule){
         const dt = timeStringToDate(item.t, now);
         if(dt > now) return {item, dt};
       }
-      // Falls nichts mehr heute, nimm ersten Termin morgen
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate()+1);
       const dt = timeStringToDate(schedule[0].t, tomorrow);
       return {item: schedule[0], dt};
     }
 
-    // UI-Referenzen
     const nowLabel = document.getElementById('nowLabel');
     const nextPerson = document.getElementById('nextPerson');
     const nextTime = document.getElementById('nextTime');
     const countdown = document.getElementById('countdown');
     const tbody = document.querySelector('#scheduleTable tbody');
     const progressBar = document.getElementById('progressBar');
-
-    // Tabelle rendern
+§
     function renderTable(nextDt){
       tbody.innerHTML = '';
       for(const item of schedule){
@@ -132,7 +146,6 @@
         tdName.textContent = item.name;
         tr.appendChild(tdTime);
         tr.appendChild(tdName);
-        // Markiere aktive Zeile (die mit nextDt)
         const candidate = timeStringToDate(item.t, nextDt);
         if(candidate.getHours()===nextDt.getHours() && candidate.getMinutes()===nextDt.getMinutes() && candidate.getSeconds()===nextDt.getSeconds()){
           tr.classList.add('active');
@@ -150,7 +163,6 @@
       return `${h}:${m}:${s}`;
     }
 
-    // Haupt-Update-Schleife
     let lastNext = null;
     function update(){
       const now = new Date();
@@ -158,7 +170,6 @@
 
       const {item, dt: nextDt} = findNext(now);
 
-      // Falls sich der "nächste" geändert hat, re-render die Tabelle
       const nextKey = item.t + '|' + item.name + '|' + nextDt.toDateString();
       if(nextKey !== lastNext){
         lastNext = nextKey;
@@ -171,8 +182,6 @@
       const remainingSec = Math.round((nextDt - now) / 1000);
       countdown.textContent = (remainingSec>0 ? formatSecondsDiff(remainingSec) : '0:00');
 
-      // Fortschrittsbalken: Verhältnis vergangener Zeit zum Intervall zwischen vorherigem und next
-      // Finde vorherigen Termin (kann gestern sein)
       let prevIndex = schedule.findIndex(s=>s.t===item.t) - 1;
       let prevDt;
       if(prevIndex >= 0){
@@ -182,16 +191,14 @@
         yesterday.setDate(yesterday.getDate()-1);
         prevDt = timeStringToDate(schedule[schedule.length-1].t, yesterday);
       }
-      const total = (nextDt - prevDt) / 1000; // Sekunden zwischen vorherigem und nächstem
+      const total = (nextDt - prevDt) / 1000;
       const elapsed = (now - prevDt) / 1000;
       const pct = Math.max(0, Math.min(1, elapsed / total));
       progressBar.style.width = Math.round(pct*100) + '%';
 
-      // Update jede 250ms für flüssige Anzeige
       requestAnimationFrame(() => setTimeout(update, 250));
     }
 
-    // Initialisierung
     (function init(){
       renderTable(new Date());
       update();

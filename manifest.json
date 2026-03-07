@@ -1,0 +1,9 @@
+{
+  "name": "Wer startet als nächstes?",
+  "short_name": "Starter",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f6f7fb",
+  "theme_color": "#4facfe",
+  "icons": []
+}
