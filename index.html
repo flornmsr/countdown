@@ -177,14 +177,14 @@
     }
 
     (function init(){
-      // for(let i = 0; i < 10; i++){
-      //   const currentTime = new Date();
-      //   let time = currentTime.addSecs((i*15)+7);
-      //   const t = `${currentTime.getHours()}:${currentTime.getMinutes()}:${currentTime.getSeconds()}`
-      //   schedule.splice(i,0,{
-      //     t, name: 'Michi ' + i
-      //   });
-      // }
+      for(let i = 0; i < 10; i++){
+        const currentTime = new Date();
+        let time = currentTime.addSecs((i*15)+7);
+        const t = `${currentTime.getHours()}:${currentTime.getMinutes()}:${currentTime.getSeconds()}`
+        schedule.splice(i,0,{
+          t, name: 'Michi ' + i
+        });
+      }
       renderTable(new Date());
       update();
       autoButton.onclick = () => {
